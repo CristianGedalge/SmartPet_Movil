@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/widgets/app_widgets.dart';
@@ -7,11 +5,18 @@ import '../../../shared/widgets/async_resource.dart';
 import '../models/pet.dart';
 import '../services/pets_service.dart';
 import '../widgets/photo_picker.dart';
+import '../widgets/photo_selection.dart';
 
 class PetFormScreen extends StatelessWidget {
-  const PetFormScreen({super.key, required this.service, this.pet});
+  const PetFormScreen({
+    super.key,
+    required this.service,
+    this.pet,
+    this.photoPicker,
+  });
   final PetsService service;
   final Pet? pet;
+  final Future<List<UploadPhoto>> Function(BuildContext, int)? photoPicker;
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -19,17 +24,27 @@ class PetFormScreen extends StatelessWidget {
     ),
     body: AsyncResource<List<Species>>(
       load: service.species,
-      builder: (_, species, _) =>
-          _PetForm(service: service, species: species, pet: pet),
+      builder: (_, species, _) => _PetForm(
+        service: service,
+        species: species,
+        pet: pet,
+        photoPicker: photoPicker,
+      ),
     ),
   );
 }
 
 class _PetForm extends StatefulWidget {
-  const _PetForm({required this.service, required this.species, this.pet});
+  const _PetForm({
+    required this.service,
+    required this.species,
+    this.pet,
+    this.photoPicker,
+  });
   final PetsService service;
   final List<Species> species;
   final Pet? pet;
+  final Future<List<UploadPhoto>> Function(BuildContext, int)? photoPicker;
   @override
   State<_PetForm> createState() => _PetFormState();
 }
@@ -68,9 +83,16 @@ class _PetFormState extends State<_PetForm> {
   }
 
   Future<void> _pick() async {
-    setState(() => _picking = true);
+    if (_busy || _picking || _photos.length >= 5) return;
+    setState(() {
+      _picking = true;
+      _error = null;
+    });
     try {
-      final photos = await pickPhotos(context, available: 5 - _photos.length);
+      final available = 5 - _photos.length;
+      final photos = widget.photoPicker != null
+          ? await widget.photoPicker!(context, available)
+          : await pickPhotos(context, available: available);
       if (mounted) setState(() => _photos.addAll(photos));
     } catch (error) {
       if (mounted) setState(() => _error = error.toString());
@@ -80,7 +102,7 @@ class _PetFormState extends State<_PetForm> {
   }
 
   Future<void> _save() async {
-    if (_busy || !_form.currentState!.validate()) return;
+    if (_busy || _picking || !_form.currentState!.validate()) return;
     if (widget.pet == null && _photos.isEmpty) {
       setState(() => _error = 'Agrega al menos una foto.');
       return;
@@ -128,149 +150,125 @@ class _PetFormState extends State<_PetForm> {
     canPop: !_busy && !_picking,
     child: SingleChildScrollView(
       padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _form,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Cada mascota tiene su historia.',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 8),
-            const Text('Completa su ficha para tener sus datos a mano.'),
-            const SizedBox(height: 24),
-            DropdownButtonFormField<int>(
-              initialValue: widget.species.any((s) => s.id == _species)
-                  ? _species
-                  : null,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Especie'),
-              items: widget.species
-                  .map(
-                    (s) => DropdownMenuItem(value: s.id, child: Text(s.nombre)),
-                  )
-                  .toList(),
-              onChanged: _busy
-                  ? null
-                  : (value) => setState(() => _species = value),
-              validator: (v) => v == null ? 'Selecciona una especie.' : null,
-            ),
-            const SizedBox(height: 14),
-            for (final entry in {
-              'nombre': 'Nombre',
-              'razaNombre': 'Raza (opcional)',
-              'color': 'Color (opcional)',
-              'pesoKg': 'Peso en kg (opcional)',
-              'edadAproximadaMeses': 'Edad en meses (opcional)',
-            }.entries) ...[
-              TextFormField(
-                controller: _fields[entry.key],
-                enabled: !_busy,
-                decoration: InputDecoration(labelText: entry.value),
-                maxLength: ['pesoKg', 'edadAproximadaMeses'].contains(entry.key)
-                    ? 12
-                    : 100,
-                keyboardType: entry.key == 'pesoKg'
-                    ? const TextInputType.numberWithOptions(decimal: true)
-                    : entry.key == 'edadAproximadaMeses'
-                    ? TextInputType.number
-                    : TextInputType.text,
-                validator: (v) {
-                  final text = v?.trim() ?? '';
-                  if (entry.key == 'nombre' && text.isEmpty) {
-                    return 'Escribe su nombre.';
-                  }
-                  if (text.isEmpty) return null;
-                  if (entry.key == 'pesoKg') {
-                    final number = double.tryParse(text.replaceAll(',', '.'));
-                    if (number == null ||
-                        !number.isFinite ||
-                        number < .01 ||
-                        number > 9999.99 ||
-                        !RegExp(r'^\d+([.,]\d{1,2})?$').hasMatch(text)) {
-                      return 'Usa un peso entre 0,01 y 9999,99 (hasta 2 decimales).';
-                    }
-                  }
-                  if (entry.key == 'edadAproximadaMeses') {
-                    final number = int.tryParse(text);
-                    if (number == null || number < 0 || number > 2147483647) {
-                      return 'Escribe una edad válida en meses.';
-                    }
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-            ],
-            DropdownButtonFormField<String>(
-              initialValue: _sex,
-              decoration: const InputDecoration(labelText: 'Sexo'),
-              items: const [
-                DropdownMenuItem(
-                  value: 'DESCONOCIDO',
-                  child: Text('Sin especificar'),
-                ),
-                DropdownMenuItem(value: 'MACHO', child: Text('Macho')),
-                DropdownMenuItem(value: 'HEMBRA', child: Text('Hembra')),
-              ],
-              onChanged: _busy ? null : (value) => _sex = value,
-            ),
-            if (widget.pet == null) ...[
-              const SizedBox(height: 22),
+      child: AbsorbPointer(
+        absorbing: _busy || _picking,
+        child: Form(
+          key: _form,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               const Text(
-                'Fotos · 1 a 5 · JPG, PNG o WebP · hasta 5 MB cada una',
+                'Cada mascota tiene su historia.',
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800),
               ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (var i = 0; i < _photos.length; i++)
-                    SizedBox(
-                      width: 96,
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.memory(
-                              Uint8List.fromList(_photos[i].bytes),
-                              height: 85,
-                              width: 96,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: 'Quitar foto',
-                            onPressed: _busy
-                                ? null
-                                : () => setState(() => _photos.removeAt(i)),
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ),
-                    ),
+              const SizedBox(height: 8),
+              const Text('Completa su ficha para tener sus datos a mano.'),
+              const SizedBox(height: 24),
+              DropdownButtonFormField<int>(
+                initialValue: widget.species.any((s) => s.id == _species)
+                    ? _species
+                    : null,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Especie'),
+                items: widget.species
+                    .map(
+                      (s) =>
+                          DropdownMenuItem(value: s.id, child: Text(s.nombre)),
+                    )
+                    .toList(),
+                onChanged: _busy
+                    ? null
+                    : (value) => setState(() => _species = value),
+                validator: (v) => v == null ? 'Selecciona una especie.' : null,
+              ),
+              const SizedBox(height: 14),
+              for (final entry in {
+                'nombre': 'Nombre',
+                'razaNombre': 'Raza (opcional)',
+                'color': 'Color (opcional)',
+                'pesoKg': 'Peso en kg (opcional)',
+                'edadAproximadaMeses': 'Edad en meses (opcional)',
+              }.entries) ...[
+                TextFormField(
+                  controller: _fields[entry.key],
+                  enabled: !_busy,
+                  decoration: InputDecoration(labelText: entry.value),
+                  maxLength:
+                      ['pesoKg', 'edadAproximadaMeses'].contains(entry.key)
+                      ? 12
+                      : 100,
+                  keyboardType: entry.key == 'pesoKg'
+                      ? const TextInputType.numberWithOptions(decimal: true)
+                      : entry.key == 'edadAproximadaMeses'
+                      ? TextInputType.number
+                      : TextInputType.text,
+                  validator: (v) {
+                    final text = v?.trim() ?? '';
+                    if (entry.key == 'nombre' && text.isEmpty) {
+                      return 'Escribe su nombre.';
+                    }
+                    if (text.isEmpty) return null;
+                    if (entry.key == 'pesoKg') {
+                      final number = double.tryParse(text.replaceAll(',', '.'));
+                      if (number == null ||
+                          !number.isFinite ||
+                          number < .01 ||
+                          number > 9999.99 ||
+                          !RegExp(r'^\d+([.,]\d{1,2})?$').hasMatch(text)) {
+                        return 'Usa un peso entre 0,01 y 9999,99 (hasta 2 decimales).';
+                      }
+                    }
+                    if (entry.key == 'edadAproximadaMeses') {
+                      final number = int.tryParse(text);
+                      if (number == null || number < 0 || number > 2147483647) {
+                        return 'Escribe una edad válida en meses.';
+                      }
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+              DropdownButtonFormField<String>(
+                initialValue: _sex,
+                decoration: const InputDecoration(labelText: 'Sexo'),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'DESCONOCIDO',
+                    child: Text('Sin especificar'),
+                  ),
+                  DropdownMenuItem(value: 'MACHO', child: Text('Macho')),
+                  DropdownMenuItem(value: 'HEMBRA', child: Text('Hembra')),
                 ],
+                onChanged: _busy ? null : (value) => _sex = value,
               ),
-              OutlinedButton.icon(
-                onPressed: _busy || _picking ? null : _pick,
-                icon: const Icon(Icons.add_photo_alternate_outlined),
-                label: Text(_picking ? 'Preparando fotos…' : 'Agregar fotos'),
+              if (widget.pet == null) ...[
+                const SizedBox(height: 22),
+                PhotoSelection(
+                  photos: _photos,
+                  busy: _busy,
+                  picking: _picking,
+                  onPick: _pick,
+                  onRemove: (index) => setState(() {
+                    _photos.removeAt(index);
+                    _error = null;
+                  }),
+                ),
+              ],
+              if (_error != null) ...[
+                const SizedBox(height: 16),
+                InlineMessage(_error!),
+              ],
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _busy || _picking ? null : _save,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Text(_busy ? 'Guardando…' : 'Guardar mascota'),
+                ),
               ),
             ],
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              InlineMessage(_error!),
-            ],
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _busy || _picking ? null : _save,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Text(_busy ? 'Guardando…' : 'Guardar mascota'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     ),

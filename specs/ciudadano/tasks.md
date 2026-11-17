@@ -1,5 +1,7 @@
 # Tareas
 
+- [x] Revisar selección y subida de fotografías en mascotas y avistamientos: contador, vistas previas, límites, permisos, bloqueo de operaciones simultáneas y tiempo de espera multipart; 41 pruebas aprobadas. Pendiente validación nativa en dispositivo.
+
 - [x] Revisar proyecto Flutter, contratos del backend y guías existentes.
 - [x] Definir alcance ciudadano, estructura y estados de error.
 - [x] Confirmar paquetes conforme a AGENTS.md e instalarlos tras autorización explícita.

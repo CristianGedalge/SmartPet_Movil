@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -8,6 +6,7 @@ import '../../../shared/widgets/location_map.dart';
 import '../../mascotas/models/pet.dart';
 import '../../mascotas/services/pets_service.dart';
 import '../../mascotas/widgets/photo_picker.dart';
+import '../../mascotas/widgets/photo_selection.dart';
 import '../models/sighting.dart';
 import '../services/sightings_service.dart';
 
@@ -39,7 +38,7 @@ class _SightingFormScreenState extends State<SightingFormScreen> {
   LatLng? _point;
   List<Species> _species = [];
   final List<UploadPhoto> _photos = [];
-  bool _loading = true, _busy = false;
+  bool _loading = true, _busy = false, _picking = false;
   String? _error;
   @override
   void initState() {
@@ -103,9 +102,9 @@ class _SightingFormScreenState extends State<SightingFormScreen> {
   }
 
   Future<void> _pick() async {
-    if (_busy) return;
+    if (_busy || _picking || _photos.length >= 5) return;
     setState(() {
-      _busy = true;
+      _picking = true;
       _error = null;
     });
     try {
@@ -117,12 +116,12 @@ class _SightingFormScreenState extends State<SightingFormScreen> {
     } catch (error) {
       if (mounted) setState(() => _error = error.toString());
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _picking = false);
     }
   }
 
   Future<void> _save() async {
-    if (_busy || !_form.currentState!.validate()) return;
+    if (_busy || _picking || !_form.currentState!.validate()) return;
     if (_point == null ||
         _date.isAfter(DateTime.now()) ||
         (widget.sighting == null && _photos.isEmpty)) {
@@ -163,7 +162,7 @@ class _SightingFormScreenState extends State<SightingFormScreen> {
 
   @override
   Widget build(BuildContext context) => PopScope(
-    canPop: !_busy,
+    canPop: !_busy && !_picking,
     child: Scaffold(
       appBar: AppBar(
         title: Text(
@@ -180,7 +179,7 @@ class _SightingFormScreenState extends State<SightingFormScreen> {
               onRetry: _loadSpecies,
             )
           : AbsorbPointer(
-              absorbing: _busy,
+              absorbing: _busy || _picking,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Form(
@@ -278,44 +277,21 @@ class _SightingFormScreenState extends State<SightingFormScreen> {
                         ),
                       if (widget.sighting == null) ...[
                         const SizedBox(height: 20),
-                        const Text(
-                          'Fotos de la mascota (1-5)',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        for (var i = 0; i < _photos.length; i++)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Column(
-                              children: [
-                                Image.memory(
-                                  Uint8List.fromList(_photos[i].bytes),
-                                  height: 150,
-                                  errorBuilder: (_, error, stack) =>
-                                      const Icon(Icons.pets),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    final index = i;
-                                    setState(() => _photos.removeAt(index));
-                                  },
-                                  child: Text('Quitar foto ${i + 1}'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        OutlinedButton.icon(
-                          onPressed: _photos.length >= 5 ? null : _pick,
-                          icon: const Icon(Icons.add_photo_alternate_outlined),
-                          label: const Text('Agregar fotos'),
+                        PhotoSelection(
+                          photos: _photos,
+                          busy: _busy,
+                          picking: _picking,
+                          onPick: _pick,
+                          onRemove: (index) => setState(() {
+                            _photos.removeAt(index);
+                            _error = null;
+                          }),
                         ),
                       ],
                       if (_error != null) InlineMessage(_error!),
                       const SizedBox(height: 24),
                       FilledButton(
-                        onPressed: _busy ? null : _save,
+                        onPressed: _busy || _picking ? null : _save,
                         child: Padding(
                           padding: const EdgeInsets.all(14),
                           child: Text(

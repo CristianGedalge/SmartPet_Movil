@@ -80,7 +80,9 @@ flutter build apk --debug --dart-define-from-file=.env
 
 Las pruebas utilizan transporte y almacenamiento sustituidos: comprueban contratos, formularios, autenticación, roles, expiración, paginación, multipart y navegación sin modificar la base de datos real. La validación de cámara, galería, GPS y representación nativa del mapa debe completarse en un dispositivo o emulador Android/iOS.
 
-Estado verificado: 33 pruebas aprobadas y `flutter analyze` sin problemas. Avistamientos integrado con API verificada mediante PostgreSQL aislado. No se generó APK en esta entrega; quedan pendientes las pruebas manuales de cámara, galería y mapa/GPS en dispositivo.
+Estado verificado: 41 pruebas aprobadas y `flutter analyze` sin problemas. Avistamientos integrado con API verificada mediante PostgreSQL aislado. No se generó APK en esta entrega; quedan pendientes las pruebas manuales de cámara, galería y mapa/GPS en dispositivo.
+
+Mascotas y avistamientos comparten un selector de fotografías con contador, vistas previas, foto principal y eliminación. Se limita la selección a los espacios disponibles, se explican los errores de permisos y se bloquean acciones simultáneas mientras se preparan las imágenes. Las subidas multipart tienen un tiempo de espera de 120 segundos; las peticiones normales conservan 45 segundos.
 
 Para producción configura API_URL con HTTPS y una firma de publicación propia. Esta entrega no publica la aplicación ni configura una firma de producción.
 
