@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 0 116 116" role="img" aria-label="SmartPet"><g fill="#00B894">
+    <ellipse cx="29" cy="43" rx="10" ry="15" transform="rotate(-24 29 43)"/>
+    <ellipse cx="53" cy="25" rx="10" ry="15" transform="rotate(-9 53 25)"/>
+    <ellipse cx="79" cy="25" rx="10" ry="15" transform="rotate(9 79 25)"/>
+    <ellipse cx="103" cy="43" rx="10" ry="15" transform="rotate(24 103 43)"/>
+    <path d="M66 53 C52 53 46 67 36 79 C28 89 35 104 48 104 C56 104 60 99 66 99 C72 99 76 104 84 104 C97 104 104 89 96 79 C86 67 80 53 66 53 Z"/>
+  </g></svg>

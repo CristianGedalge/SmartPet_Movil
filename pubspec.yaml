@@ -34,6 +34,15 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  http: ^1.6.0
+  http_parser: ^4.1.2
+  flutter_secure_storage: ^11.2.0
+  image_picker: ^1.2.4
+  maplibre_gl: ^0.28.0
+  geolocator: ^14.1.2
+  flutter_svg: ^2.4.0
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -56,6 +65,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/smartpet-icon.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
