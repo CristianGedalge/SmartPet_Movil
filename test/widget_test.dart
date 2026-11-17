@@ -47,6 +47,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Hola, Ana \u{1F44B}'), findsOneWidget);
       expect(find.byType(NavigationDestination), findsNWidgets(5));
+      await tester.tap(find.byType(NavigationDestination).at(4));
+      await tester.pumpAndSettle();
+      expect(find.text('Pronto habrá nuevas historias'), findsOneWidget);
+      await tester.tap(find.byTooltip('Mi perfil'));
+      await tester.pumpAndSettle();
+      expect(find.text('Mi espacio'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Mi espacio'), findsNothing);
       await tester.tap(find.byType(NavigationDestination).at(3));
       await tester.pumpAndSettle();
       expect(find.text('Reportar avistamiento'), findsOneWidget);

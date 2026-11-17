@@ -12,9 +12,10 @@ Primera versión Flutter conectada a los endpoints existentes de `smartpet_api`.
 - Alertas: comunidad activa y mis alertas/historial, detalle, publicación para una mascota propia, edición de alertas activas, resolución y cancelación confirmadas.
 - Ubicación mediante mapa o GPS opcional. Las coordenadas se envían internamente; no hay campos numéricos para el usuario.
 - Perfil: nombre, apellido, teléfono, cambio opcional de contraseña y cierre de sesión.
+- Adopciones: catálogo público paginado, detalle con galería de fotos, características, requisitos y contacto institucional; permite copiar teléfono y dirección.
 - Estados de carga, listas vacías, errores, reintentos y paginación `limit`/`offset`.
 
-No se agregaron pantallas de adopciones, notificaciones, avistamientos ni recuperación de contraseña: el backend actual no ofrece esos contratos. Cloudinary se utiliza únicamente desde la API.
+No se agregaron notificaciones ni recuperación de contraseña. Cloudinary se utiliza únicamente desde la API. El móvil consulta adopciones; las entregas y los datos del adoptante se gestionan desde el portal web del encargado.
 
 ## Ejecutar
 
@@ -80,7 +81,7 @@ flutter build apk --debug --dart-define-from-file=.env
 
 Las pruebas utilizan transporte y almacenamiento sustituidos: comprueban contratos, formularios, autenticación, roles, expiración, paginación, multipart y navegación sin modificar la base de datos real. La validación de cámara, galería, GPS y representación nativa del mapa debe completarse en un dispositivo o emulador Android/iOS.
 
-Estado verificado: 41 pruebas aprobadas y `flutter analyze` sin problemas. Avistamientos integrado con API verificada mediante PostgreSQL aislado. No se generó APK en esta entrega; quedan pendientes las pruebas manuales de cámara, galería y mapa/GPS en dispositivo.
+Estado verificado: 49 pruebas comprobadas y `flutter analyze` sin problemas (48 en la suite completa y la prueba adicional de galería en pantalla pequeña, seguida de las 8 pruebas del catálogo). Avistamientos integrado con API verificada mediante PostgreSQL aislado. No se generó APK en esta entrega; quedan pendientes las pruebas manuales de cámara, galería y mapa/GPS en dispositivo.
 
 Mascotas y avistamientos comparten un selector de fotografías con contador, vistas previas, foto principal y eliminación. Se limita la selección a los espacios disponibles, se explican los errores de permisos y se bloquean acciones simultáneas mientras se preparan las imágenes. Las subidas multipart tienen un tiempo de espera de 120 segundos; las peticiones normales conservan 45 segundos.
 
@@ -94,3 +95,9 @@ En Windows, Gradle usa dos trabajadores y un límite de memoria de 3 GiB. Se des
 Nueva pestaña Avistamientos: Comunidad y Mis avistamientos, publicación con especie, descripción, referencia, fecha/hora, mapa y fotos; detalle con edición y gestión de fotos del autor. Los cierres/cancelaciones conservan historial y ocultan la publicación de Comunidad. Sin IA ni coincidencias automáticas.
 
 Requiere aplicar en el backend `npm run migration:run` y reiniciar el servidor si no usa watch. Después hacer Hot Restart del móvil. No cambian API_URL ni MAP_STYLE_URL y no hay paquetes nuevos. Especificación y contrato en `specs/avistamientos/` y `smartpet_api/specs/avistamientos/`.
+
+## Adopciones
+
+La pestaña Adopciones y el acceso Explorar adopciones del Inicio consultan `GET /api/v1/adopciones` y `GET /api/v1/adopciones/:id`, sin enviar JWT. El catálogo se actualiza deslizando hacia abajo, al reintentar y al volver del detalle; permite cargar más resultados. Una publicación retirada o adoptada muestra un aviso de que ya no está disponible.
+
+Se mantienen cinco pestañas inferiores. El perfil se abre desde el avatar superior (Mi perfil), con regreso y descarte de la ruta al cerrar sesión. El contacto institucional es seleccionable y puede copiarse; no se abre automáticamente una llamada ni una aplicación externa. Sin postulaciones ni registro de adopciones desde el móvil. Especificación en `specs/adopciones/`. No requiere paquetes ni variables nuevos. Hacer Hot Restart para ver la nueva navegación.
