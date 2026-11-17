@@ -1,0 +1,2 @@
+﻿Logo SmartPet proporcionado por el usuario.
+smartpet-icon.svg copiado de smartpet_front/public/smartpet-icon.svg.
