@@ -10,6 +10,8 @@ import '../models/sighting.dart';
 import '../services/sightings_service.dart';
 import '../../mascotas/widgets/photo_picker.dart';
 import 'sighting_form_screen.dart';
+import '../../chat/widgets/contact_author_button.dart';
+import '../../chat/services/chat_service.dart';
 
 class SightingDetailScreen extends StatelessWidget {
   const SightingDetailScreen({
@@ -115,6 +117,13 @@ class _DetailState extends State<_Detail> {
               child: Chip(label: Text(sighting.statusLabel)),
             ),
             Text('Visto: ${friendlyDate(context, sighting.seenAt)}'),
+            if (!sighting.isMine && sighting.status == 'ACTIVO') ...[
+              const SizedBox(height: 16),
+              ContactAuthorButton(
+                service: ChatService(widget.service.api),
+                sightingId: sighting.id,
+              ),
+            ],
             const SizedBox(height: 16),
             Text(
               sighting.description,

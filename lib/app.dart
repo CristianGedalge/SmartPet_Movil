@@ -2,6 +2,8 @@ import 'features/avistamientos/screens/sightings_screen.dart';
 import 'features/avistamientos/services/sightings_service.dart';
 import 'features/adopciones/screens/adoptions_screen.dart';
 import 'features/adopciones/services/adoptions_service.dart';
+import 'features/chat/services/chat_service.dart';
+import 'features/chat/screens/chat_inbox_screen.dart';
 
 import 'dart:async';
 
@@ -202,6 +204,17 @@ class _CitizenShellState extends State<_CitizenShell> {
             ],
           ),
           actions: [
+            IconButton(
+              tooltip: 'Mensajes',
+              icon: const Icon(Icons.chat_bubble_outline_rounded),
+              onPressed: () => Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ChatInboxScreen(service: ChatService(widget.session.api)),
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: IconButton(

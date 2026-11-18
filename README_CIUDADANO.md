@@ -13,6 +13,7 @@ Primera versión Flutter conectada a los endpoints existentes de `smartpet_api`.
 - Ubicación mediante mapa o GPS opcional. Las coordenadas se envían internamente; no hay campos numéricos para el usuario.
 - Perfil: nombre, apellido, teléfono, cambio opcional de contraseña y cierre de sesión.
 - Adopciones: catálogo público paginado, detalle con galería de fotos, características, requisitos y contacto institucional; permite copiar teléfono y dirección.
+- Chat privado: contactar al autor desde alertas/avistamientos, bandeja Mensajes, historial, mensajes pendientes y actualizaciones WebSocket autenticadas.
 - Estados de carga, listas vacías, errores, reintentos y paginación `limit`/`offset`.
 
 No se agregaron notificaciones ni recuperación de contraseña. Cloudinary se utiliza únicamente desde la API. El móvil consulta adopciones; las entregas y los datos del adoptante se gestionan desde el portal web del encargado.
@@ -81,7 +82,7 @@ flutter build apk --debug --dart-define-from-file=.env
 
 Las pruebas utilizan transporte y almacenamiento sustituidos: comprueban contratos, formularios, autenticación, roles, expiración, paginación, multipart y navegación sin modificar la base de datos real. La validación de cámara, galería, GPS y representación nativa del mapa debe completarse en un dispositivo o emulador Android/iOS.
 
-Estado verificado: 49 pruebas comprobadas y `flutter analyze` sin problemas (48 en la suite completa y la prueba adicional de galería en pantalla pequeña, seguida de las 8 pruebas del catálogo). Avistamientos integrado con API verificada mediante PostgreSQL aislado. No se generó APK en esta entrega; quedan pendientes las pruebas manuales de cámara, galería y mapa/GPS en dispositivo.
+Estado verificado: 55 casos comprobados (suite de 54 y una regresión adicional de chat) y `flutter analyze` sin problemas. APIs verificadas mediante PostgreSQL aislado y clientes Socket.IO reales. No se generó APK en esta entrega; quedan pendientes las pruebas manuales de cámara, galería, mapa/GPS y comunicación entre teléfonos en dispositivo.
 
 Mascotas y avistamientos comparten un selector de fotografías con contador, vistas previas, foto principal y eliminación. Se limita la selección a los espacios disponibles, se explican los errores de permisos y se bloquean acciones simultáneas mientras se preparan las imágenes. Las subidas multipart tienen un tiempo de espera de 120 segundos; las peticiones normales conservan 45 segundos.
 
@@ -101,3 +102,11 @@ Requiere aplicar en el backend `npm run migration:run` y reiniciar el servidor s
 La pestaña Adopciones y el acceso Explorar adopciones del Inicio consultan `GET /api/v1/adopciones` y `GET /api/v1/adopciones/:id`, sin enviar JWT. El catálogo se actualiza deslizando hacia abajo, al reintentar y al volver del detalle; permite cargar más resultados. Una publicación retirada o adoptada muestra un aviso de que ya no está disponible.
 
 Se mantienen cinco pestañas inferiores. El perfil se abre desde el avatar superior (Mi perfil), con regreso y descarte de la ruta al cerrar sesión. El contacto institucional es seleccionable y puede copiarse; no se abre automáticamente una llamada ni una aplicación externa. Sin postulaciones ni registro de adopciones desde el móvil. Especificación en `specs/adopciones/`. No requiere paquetes ni variables nuevos. Hacer Hot Restart para ver la nueva navegación.
+
+## Chat
+
+Desde una alerta o avistamiento de la comunidad, pulsa Contactar al autor. El backend deduce al destinatario y reutiliza la conversación. El autor responde desde Mensajes (icono de chat superior). Solo los participantes leen o envían; no se muestran teléfonos ni correos. Las conversaciones anteriores siguen disponibles al cerrar una publicación mientras los usuarios sigan activos.
+
+El historial se guarda por HTTP en `/api/v1/chat/conversaciones`; los avisos Socket.IO del namespace `/chat` actualizan el móvil al instante. `socket_io_client` se añadió con autorización. El token va en el handshake, no en URL. Al reconectar se recuperan mensajes perdidos por páginas y se eliminan duplicados; un reintento de envío conserva el UUID y el borrador. Conexiones, listeners y temporizadores de actualización se liberan al salir, cerrar sesión o pasar a segundo plano.
+
+Usa el mismo host/puerto de `API_URL`; con USB basta `adb reverse tcp:3000 tcp:3000`. Reiniciar backend y hacer `flutter pub get` y Hot Restart. No hay variables nuevas. No incluye adjuntos, indicadores de escritura ni notificaciones push con app cerrada. Especificación en `specs/chat/` y contrato backend en `smartpet_api/docs/chat.md`.
