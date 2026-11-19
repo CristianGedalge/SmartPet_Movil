@@ -4,6 +4,8 @@ import 'features/adopciones/screens/adoptions_screen.dart';
 import 'features/adopciones/services/adoptions_service.dart';
 import 'features/chat/services/chat_service.dart';
 import 'features/chat/screens/chat_inbox_screen.dart';
+import 'features/busqueda_visual/screens/visual_search_screen.dart';
+import 'features/busqueda_visual/services/visual_search_service.dart';
 
 import 'dart:async';
 
@@ -204,6 +206,20 @@ class _CitizenShellState extends State<_CitizenShell> {
             ],
           ),
           actions: [
+            IconButton(
+              tooltip: 'Buscar por foto',
+              icon: const Icon(Icons.image_search_rounded),
+              onPressed: () => Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VisualSearchScreen(
+                    service: VisualSearchService(widget.session.api),
+                    sightings: _sightings,
+                    styleUrl: widget.config.mapStyleUrl,
+                  ),
+                ),
+              ),
+            ),
             IconButton(
               tooltip: 'Mensajes',
               icon: const Icon(Icons.chat_bubble_outline_rounded),
