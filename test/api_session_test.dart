@@ -58,6 +58,88 @@ void main() {
   );
 
   test(
+    'login y cierre notifican al dispositivo sin bloquear la sesión',
+    () async {
+      final api = ApiClient(
+        'https://example.com/api/v1',
+        client: MockClient(
+          (_) async => http.Response(
+            jsonEncode({'access_token': 'jwt', 'usuario': profile()}),
+            200,
+          ),
+        ),
+      );
+      final notifications = MemorySessionNotifications();
+      final store = MemoryTokenStore();
+      final session = Session(api, store, notifications: notifications);
+
+      await session.authenticate({
+        'email': 'ana@example.com',
+        'password': '12345678',
+      });
+      expect(notifications.logins, 1);
+      expect(api.token, 'jwt');
+
+      notifications.failLogout = true;
+      await session.logout();
+      expect(notifications.logouts, 1);
+      expect(api.token, isNull);
+      expect(store.value, isNull);
+
+      session.dispose();
+      expect(notifications.disposed, true);
+      api.close();
+    },
+  );
+
+  test(
+    'registro pendiente no guarda token y la verificación completa la sesión',
+    () async {
+      final api = ApiClient(
+        'https://example.com/api/v1',
+        client: MockClient((request) async {
+          if (request.url.path.endsWith('/auth/register')) {
+            return http.Response(
+              jsonEncode({
+                'requiereVerificacion': true,
+                'email': 'ana@example.com',
+                'emailEnmascarado': 'an*@example.com',
+                'correoEnviado': true,
+              }),
+              201,
+            );
+          }
+          expect(request.url.path, endsWith('/auth/email/verify'));
+          expect(jsonDecode(request.body), {
+            'email': 'ana@example.com',
+            'codigo': '123456',
+          });
+          return http.Response(
+            jsonEncode({'access_token': 'jwt', 'usuario': profile()}),
+            200,
+          );
+        }),
+      );
+      final store = MemoryTokenStore();
+      final session = Session(api, store);
+
+      final pending = await session.authenticate({
+        'email': 'ana@example.com',
+        'password': 'Password123',
+      }, register: true);
+      expect(pending?.maskedEmail, 'an*@example.com');
+      expect(store.value, isNull);
+      expect(session.user, isNull);
+
+      await session.verifyEmail('ana@example.com', '123456');
+      expect(store.value, 'jwt');
+      expect(session.user?.isCitizen, true);
+      session.dispose();
+      api.close();
+    },
+  );
+
+  test(
     'restauración conserva token si falla la red, y permite reintentar',
     () async {
       var offline = true;

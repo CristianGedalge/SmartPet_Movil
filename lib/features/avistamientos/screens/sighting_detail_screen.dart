@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../../shared/widgets/async_resource.dart';
 
@@ -69,7 +70,7 @@ class _DetailState extends State<_Detail> {
     try {
       await action();
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -205,15 +206,12 @@ class _DetailState extends State<_Detail> {
                                           !mounted) {
                                         return;
                                       }
-                                      final pending = await widget.service
-                                          .deletePhoto(sighting.id, photo.id);
+                                      await widget.service.deletePhoto(
+                                        sighting.id,
+                                        photo.id,
+                                      );
                                       if (mounted) {
-                                        showMessage(
-                                          context,
-                                          pending
-                                              ? 'Foto eliminada. Su limpieza en el almacenamiento está pendiente.'
-                                              : 'Foto eliminada.',
-                                        );
+                                        showMessage(context, 'Foto eliminada.');
                                         widget.reload();
                                       }
                                     }),

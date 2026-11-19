@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../../shared/widgets/async_resource.dart';
 import '../../../shared/widgets/location_map.dart';
@@ -92,7 +93,7 @@ class _DetailState extends State<_Detail> {
         widget.reload();
       }
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

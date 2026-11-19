@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../services/chat_service.dart';
 import '../screens/chat_screen.dart';
@@ -40,7 +41,14 @@ class _ContactAuthorButtonState extends State<ContactAuthorButton> {
         ),
       );
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) {
+        setState(
+          () => _error = userErrorMessage(
+            error,
+            fallback: 'No pudimos abrir la conversación. Intenta nuevamente.',
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -97,6 +97,53 @@ void main() {
     api.close();
   });
 
+  testWidgets('muestra un estado claro cuando no existen coincidencias', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(600, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final api = ApiClient(
+      'https://example.test/api/v1',
+      client: MockClient((request) async {
+        if (request.url.path.endsWith('/especies')) {
+          return http.Response('[{"id":1,"nombre":"Perro"}]', 200);
+        }
+        return http.Response(jsonEncode(result(empty: true)), 201);
+      }),
+    )..token = 'token';
+    addTearDown(api.close);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildAppTheme(),
+        home: VisualSearchScreen(
+          service: VisualSearchService(api),
+          sightings: SightingsService(api),
+          styleUrl: 'https://example.test/style',
+          imagePicker: GalleryPicker(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Perro').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Agregar fotos'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Elegir de la galería'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Buscar coincidencias'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No encontramos coincidencias'), findsOneWidget);
+    expect(find.textContaining('suficiente parecido'), findsOneWidget);
+    expect(find.text('0 posibles coincidencias'), findsNothing);
+    expect(find.text('Posible coincidencia 1'), findsNothing);
+  });
+
   testWidgets(
     'selecciona foto, conserva datos ante error, reintenta y muestra candidatos',
     (tester) async {

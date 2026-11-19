@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../config/app_theme.dart';
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../../shared/widgets/async_resource.dart';
 import '../../mascotas/models/pet.dart';
@@ -87,7 +88,9 @@ class _SearchFormState extends State<_SearchForm> {
         });
       }
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) {
+        setState(() => _error = userErrorMessage(error));
+      }
     } finally {
       if (mounted) setState(() => _picking = false);
     }
@@ -110,7 +113,14 @@ class _SearchFormState extends State<_SearchForm> {
       final result = await widget.service.search(_speciesId!, List.of(_photos));
       if (mounted) setState(() => _result = result);
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) {
+        setState(
+          () => _error = userErrorMessage(
+            error,
+            fallback: 'No pudimos buscar coincidencias. Intenta nuevamente.',
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -155,7 +165,7 @@ class _SearchFormState extends State<_SearchForm> {
         const Padding(
           padding: EdgeInsets.only(top: 12),
           child: Text(
-            'No hay especies disponibles. Revisa la configuración de la API.',
+            'No hay especies disponibles en este momento. Intenta actualizar más tarde.',
           ),
         ),
       const SizedBox(height: 20),
@@ -195,30 +205,32 @@ class _SearchFormState extends State<_SearchForm> {
         ),
       if (_result case final result?) ...[
         const SizedBox(height: 24),
-        Text(
-          result.matches.length == 1
-              ? '1 posible coincidencia'
-              : '${result.matches.length} posibles coincidencias',
-          style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 10),
-        AppCard(child: Text(result.notice)),
         if (result.failedPhotos > 0)
           Padding(
-            padding: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.only(bottom: 12),
             child: Text(
-              '${result.failedPhotos} fotos de avistamientos no pudieron procesarse. Los resultados pueden estar incompletos.',
+              'No fue posible comparar ${result.failedPhotos} fotos de avistamientos. Los resultados pueden estar incompletos.',
             ),
           ),
         if (result.matches.isEmpty)
           const Padding(
             padding: EdgeInsets.only(top: 16),
             child: EmptyPanel(
-              title: 'Sin avistamientos para comparar',
-              message: 'No hay fotografías disponibles de avistamientos activos de esta especie.',
+              title: 'No encontramos coincidencias',
+              message: 'Ningún avistamiento tiene suficiente parecido con las fotos seleccionadas. Puedes probar con otras imágenes de tu mascota.',
               icon: Icons.image_search_outlined,
             ),
           ),
+        if (result.matches.isNotEmpty) ...[
+          Text(
+            result.matches.length == 1
+                ? '1 posible coincidencia'
+                : '${result.matches.length} posibles coincidencias',
+            style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          AppCard(child: Text(result.notice)),
+        ],
         for (var i = 0; i < result.matches.length; i++)
           Padding(
             padding: const EdgeInsets.only(top: 16),

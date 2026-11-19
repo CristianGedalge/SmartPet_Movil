@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../legal/screens/legal_screen.dart';
+import '../../suscripcion/models/plan_usage.dart';
+import '../../suscripcion/screens/plans_screen.dart';
+import '../services/session.dart';
 
 import '../../../config/app_theme.dart';
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
-import '../services/session.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, required this.session});
@@ -55,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         showMessage(context, 'Tu perfil se actualizó.');
       }
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -112,6 +115,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+              _PlanCard(plan: user.suscripcion, session: widget.session),
               const SizedBox(height: 24),
               for (final item in [
                 (_nombre, 'Nombre'),
@@ -192,6 +197,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PlanCard extends StatelessWidget {
+  const _PlanCard({required this.plan, required this.session});
+  final PlanUsage? plan;
+  final Session session;
+
+  @override
+  Widget build(BuildContext context) {
+    final current = plan;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            current == null ? 'Sin plan' : 'Plan ${current.plan}',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            current == null
+                ? 'No tienes una suscripción activa.'
+                : current.estado == 'ACTIVA'
+                ? 'Activa${current.vence == null ? '' : ' hasta ${current.vence}'}'
+                : current.textoBusqueda(),
+          ),
+          if (current != null && current.activa) ...[
+            const SizedBox(height: 6),
+            Text(current.textoBusqueda()),
+            const SizedBox(height: 4),
+            Text(current.textoAgente()),
+          ],
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton(
+              onPressed: () => Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => PlansScreen(session: session),
+                ),
+              ),
+              child: const Text('Ver planes y pagar'),
+            ),
+          ),
+        ],
       ),
     );
   }

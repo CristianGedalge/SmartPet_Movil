@@ -1,18 +1,31 @@
 import 'package:flutter/material.dart';
 
 import '../../../config/app_theme.dart';
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../legal/screens/legal_screen.dart';
+import '../models/pending_email_verification.dart';
+import 'email_verification_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({
     super.key,
     required this.onLogin,
     required this.onRegister,
+    required this.onVerifyEmail,
+    required this.onResendCode,
     this.logo,
   });
-  final Future<void> Function(Map<String, dynamic> credentials) onLogin;
-  final Future<void> Function(Map<String, dynamic> registration) onRegister;
+  final Future<PendingEmailVerification?> Function(
+    Map<String, dynamic> credentials,
+  )
+  onLogin;
+  final Future<PendingEmailVerification?> Function(
+    Map<String, dynamic> registration,
+  )
+  onRegister;
+  final Future<void> Function(String email, String code) onVerifyEmail;
+  final Future<void> Function(String email) onResendCode;
   final Widget? logo;
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -64,8 +77,9 @@ class _AuthScreenState extends State<AuthScreen> {
       'password': _password.text,
     };
     try {
+      final PendingEmailVerification? pending;
       if (_register) {
-        await widget.onRegister({
+        pending = await widget.onRegister({
           'aceptaTerminos': _acceptTerms,
           'aceptaPrivacidad': _acceptPrivacy,
           'versionLegal': legalVersion,
@@ -76,10 +90,22 @@ class _AuthScreenState extends State<AuthScreen> {
             'telefono': _telefono.text.trim(),
         });
       } else {
-        await widget.onLogin(credentials);
+        pending = await widget.onLogin(credentials);
+      }
+      if (pending != null && mounted) {
+        await Navigator.push<void>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EmailVerificationScreen(
+              pending: pending!,
+              onVerify: widget.onVerifyEmail,
+              onResend: widget.onResendCode,
+            ),
+          ),
+        );
       }
     } catch (failure) {
-      if (mounted) setState(() => _error = failure.toString());
+      if (mounted) setState(() => _error = userErrorMessage(failure));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

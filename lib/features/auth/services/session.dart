@@ -6,11 +6,18 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../shared/models/json_values.dart';
 import '../../../shared/services/api_client.dart';
 import '../models/user_profile.dart';
+import '../models/pending_email_verification.dart';
 
 abstract interface class TokenStore {
   Future<String?> read();
   Future<void> write(String token);
   Future<void> clear();
+}
+
+abstract interface class SessionNotifications {
+  Future<void> afterLogin(ApiClient api);
+  Future<void> beforeLogout(ApiClient api);
+  void dispose();
 }
 
 class SecureTokenStore implements TokenStore {
@@ -25,13 +32,14 @@ class SecureTokenStore implements TokenStore {
 }
 
 class Session extends ChangeNotifier {
-  Session(this.api, this.store) {
+  Session(this.api, this.store, {this.notifications}) {
     api.onUnauthorized = (_) {
-      unawaited(logout());
+      unawaited(logout(notifyDevice: false));
     };
   }
   final ApiClient api;
   final TokenStore store;
+  final SessionNotifications? notifications;
   UserProfile? user;
   bool restoring = true;
   String? restoreError;
@@ -69,7 +77,7 @@ class Session extends ChangeNotifier {
     } catch (error) {
       if (generation != _generation) return;
       if (error is ApiFailure && error.status == 403) {
-        await logout();
+        await logout(notifyDevice: false);
       } else {
         restoreError = error is ApiFailure
             ? error.message
@@ -92,7 +100,7 @@ class Session extends ChangeNotifier {
     }
   }
 
-  Future<void> authenticate(
+  Future<PendingEmailVerification?> authenticate(
     Map<String, dynamic> data, {
     bool register = false,
   }) async {
@@ -105,6 +113,47 @@ class Session extends ChangeNotifier {
         authenticated: false,
       ),
     );
+    if (result['requiereVerificacion'] == true) {
+      return PendingEmailVerification.fromJson(result);
+    }
+    await _completeAuthentication(result, generation);
+    return null;
+  }
+
+  Future<void> verifyEmail(String email, String code) async {
+    final generation = ++_generation;
+    final result = jsonObject(
+      await api.request(
+        'POST',
+        '/auth/email/verify',
+        body: {'email': email, 'codigo': code},
+        authenticated: false,
+      ),
+    );
+    await _completeAuthentication(result, generation);
+  }
+
+  Future<void> resendVerification(String email) async {
+    final result = jsonObject(
+      await api.request(
+        'POST',
+        '/auth/email/resend',
+        body: {'email': email},
+        authenticated: false,
+      ),
+    );
+    if (result['enviado'] != true) {
+      throw const ApiFailure(
+        'No pudimos enviar el código. Intenta nuevamente en unos minutos.',
+        status: 503,
+      );
+    }
+  }
+
+  Future<void> _completeAuthentication(
+    Map<String, dynamic> result,
+    int generation,
+  ) async {
     final profile = UserProfile.fromJson(jsonObject(result['usuario']));
     _requireCitizen(profile);
     final token = requiredString(result, 'access_token');
@@ -122,6 +171,11 @@ class Session extends ChangeNotifier {
     restoring = false;
     restoreError = null;
     notifyListeners();
+    try {
+      await notifications?.afterLogin(api);
+    } catch (_) {
+      // La sesión ya es válida aunque el dispositivo no pueda recibir push.
+    }
   }
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
@@ -135,8 +189,30 @@ class Session extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> logout() async {
-    ++_generation;
+  Future<void> reload() async {
+    if (api.token == null) return;
+    final generation = _generation;
+    final profile = UserProfile.fromJson(
+      jsonObject(await api.request('GET', '/auth/profile')),
+    );
+    _requireCitizen(profile);
+    if (generation != _generation || _disposed) return;
+    user = profile;
+    notifyListeners();
+  }
+
+  Future<void> logout({bool notifyDevice = true}) async {
+    final generation = ++_generation;
+    if (notifyDevice && api.token != null) {
+      try {
+        await notifications
+            ?.beforeLogout(api)
+            .timeout(const Duration(seconds: 8));
+      } catch (_) {
+        // El cierre local siempre continúa aunque el envío push falle.
+      }
+    }
+    if (generation != _generation || _disposed) return;
     api.token = null;
     user = null;
     restoring = false;
@@ -155,6 +231,7 @@ class Session extends ChangeNotifier {
     _disposed = true;
     ++_generation;
     api.onUnauthorized = null;
+    notifications?.dispose();
     super.dispose();
   }
 }

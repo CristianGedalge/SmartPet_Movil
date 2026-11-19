@@ -61,7 +61,9 @@ class ApiClient {
             : jsonDecode(utf8.decode(response.bodyBytes));
       } on FormatException {
         if (response.statusCode < 400) {
-          throw const ApiFailure('La API devolvió una respuesta no válida.');
+          throw const ApiFailure(
+            'No pudimos procesar la información recibida. Intenta nuevamente.',
+          );
         }
       }
       if (response.statusCode >= 400) {
@@ -78,7 +80,7 @@ class ApiClient {
               ? message.join('\n')
               : message is String
               ? message
-              : 'No se pudo completar la operación (${response.statusCode}).',
+              : 'No se pudo completar la operación. Intenta nuevamente.',
           status: response.statusCode,
         );
       }

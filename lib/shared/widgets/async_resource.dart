@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../utils/error_message.dart';
 import 'app_widgets.dart';
 
 class AsyncResource<T extends Object> extends StatefulWidget {
@@ -32,7 +33,11 @@ class _AsyncResourceState<T extends Object> extends State<AsyncResource<T>> {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: ErrorPanel(
-              message: snapshot.error.toString(),
+              message: userErrorMessage(
+                snapshot.error,
+                fallback:
+                    'No pudimos cargar la información. Intenta nuevamente.',
+              ),
               onRetry: _reload,
             ),
           ),

@@ -57,6 +57,26 @@ void main() {
       });
       expect(user.isCitizen, isTrue);
       expect(user.initials, 'AP');
+      final plan = UserProfile.fromJson({
+        'id': 'user',
+        'nombre': 'Ana',
+        'apellido': 'Pérez',
+        'email': 'ana@example.com',
+        'rol': 'CIUDADANO',
+        'suscripcion': {
+          'plan': 'Gratis',
+          'estado': 'ACTIVA',
+          'inicio': '2026-11-01T00:00:00.000Z',
+          'fin': null,
+          'busquedasFotoMes': 1,
+          'busquedasFotoUsadas': 1,
+          'mensajesAgenteMes': 20,
+          'mensajesAgenteUsados': 0,
+        },
+      }).suscripcion!;
+      expect(plan.puedeBuscar, isFalse);
+      expect(plan.puedeAgente, isTrue);
+      expect(plan.textoBusqueda(), contains('cupo mensual'));
       expect(
         UserProfile.fromJson({
           'id': 'user',
