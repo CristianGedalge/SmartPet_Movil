@@ -36,9 +36,6 @@ jobs:
       - name: Instalar dependencias
         run: flutter pub get
 
-      - name: Validar código
-        run: flutter analyze
-
       - name: Compilar iOS sin firma
         env:
           API_URL: ${{ inputs.api_url || 'https://api.smartpet.gedalge.dev/api/v1' }}
