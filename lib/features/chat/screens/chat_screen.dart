@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../config/app_theme.dart';
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../models/chat.dart';
 import '../services/chat_connection.dart';
@@ -109,7 +110,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       }
       WidgetsBinding.instance.addPostFrameCallback((_) => _markVisible());
     } catch (error) {
-      if (mounted && _active) setState(() => _error = error.toString());
+      if (mounted && _active) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) {
         setState(() => _fetching = false);
@@ -139,7 +140,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       widget.service.read(_chat.id, messageId).catchError((Object error) {
         if (mounted && _lastRead == messageId) {
           _lastRead = null;
-          setState(() => _error = error.toString());
+          setState(() => _error = userErrorMessage(error));
         }
       }),
     );
@@ -161,7 +162,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         });
       }
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _fetching = false);
       if (_again) {
@@ -206,7 +207,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       }
       unawaited(_sync());
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _sending = false);
     }

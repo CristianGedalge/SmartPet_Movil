@@ -1,0 +1,68 @@
+name: Generar IPA iOS sin firma
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/build-ios-unsigned.yml
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: URL HTTPS del backend terminada en /api/v1
+        required: true
+        default: https://api.smartpet.gedalge.dev/api/v1
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: Compilar IPA sin firma
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Compilar iOS sin firma
+        env:
+          API_URL: ${{ inputs.api_url || 'https://api.smartpet.gedalge.dev/api/v1' }}
+          FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define="API_URL=$API_URL" \
+            --dart-define="MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty" \
+            --dart-define="FIREBASE_API_KEY=$FIREBASE_API_KEY" \
+            --dart-define="FIREBASE_APP_ID=$FIREBASE_APP_ID" \
+            --dart-define="FIREBASE_MESSAGING_SENDER_ID=$FIREBASE_MESSAGING_SENDER_ID" \
+            --dart-define="FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID"
+
+      - name: Empaquetar IPA
+        run: |
+          mkdir -p build/ios/ipa/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Runner.app
+          cd build/ios/ipa
+          zip -r SmartPet-unsigned.ipa Payload
+
+      - name: Publicar IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartpet-ios-unsigned
+          path: build/ios/ipa/SmartPet-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7

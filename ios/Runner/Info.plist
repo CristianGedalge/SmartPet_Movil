@@ -32,6 +32,10 @@
 	<string>Selecciona fotografías para la ficha de tu mascota.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Toma fotografías para la ficha de tu mascota.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SmartPet usa el micrófono para dictar mensajes al Agente SmartPet.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SmartPet convierte tu voz en texto para enviarla al Agente SmartPet.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

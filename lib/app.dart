@@ -6,6 +6,8 @@ import 'features/chat/services/chat_service.dart';
 import 'features/chat/screens/chat_inbox_screen.dart';
 import 'features/busqueda_visual/screens/visual_search_screen.dart';
 import 'features/busqueda_visual/services/visual_search_service.dart';
+import 'features/agente/screens/agent_chat_screen.dart';
+import 'features/agente/services/agent_chat_service.dart';
 
 import 'dart:async';
 
@@ -15,6 +17,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'config/api_config.dart';
 import 'config/app_theme.dart';
+import 'features/suscripcion/models/plan_usage.dart';
+import 'features/suscripcion/screens/plan_blocked_screen.dart';
 import 'features/auth/screens/auth_screen.dart';
 import 'features/auth/screens/profile_screen.dart';
 import 'features/auth/services/session.dart';
@@ -95,6 +99,8 @@ class _SmartPetAppState extends State<SmartPetApp> {
             logo: SvgPicture.asset('assets/smartpet-icon.svg'),
             onLogin: session.authenticate,
             onRegister: (data) => session.authenticate(data, register: true),
+            onVerifyEmail: session.verifyEmail,
+            onResendCode: session.resendVerification,
           );
         }
         // Replacing this Navigator discards every private route/dialog on logout.
@@ -146,6 +152,35 @@ class _CitizenShellState extends State<_CitizenShell> {
   late final _sightings = SightingsService(widget.session.api);
   late final _adoptions = AdoptionsService(widget.session.api);
   void _go(int index) => setState(() => _index = index);
+
+  Future<void> _openLimited({
+    required String title,
+    required bool Function(PlanUsage plan) allowed,
+    required String Function(PlanUsage? plan) blocked,
+    required Widget screen,
+  }) async {
+    try {
+      await widget.session.reload();
+    } catch (_) {}
+    if (!mounted) return;
+    final plan = widget.session.user?.suscripcion;
+    final destination = plan != null && allowed(plan)
+        ? screen
+        : PlanBlockedScreen(
+            title: title,
+            message: blocked(plan),
+            session: widget.session,
+          );
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(builder: (_) => destination),
+    );
+    if (!mounted || destination is PlanBlockedScreen) return;
+    try {
+      await widget.session.reload();
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = widget.session.user;
@@ -207,16 +242,31 @@ class _CitizenShellState extends State<_CitizenShell> {
           ),
           actions: [
             IconButton(
+              tooltip: 'Agente SmartPet',
+              icon: const Icon(Icons.auto_awesome_rounded),
+              onPressed: () => _openLimited(
+                title: 'Agente SmartPet',
+                allowed: (plan) => plan.puedeAgente,
+                blocked: (plan) =>
+                    plan?.textoAgente() ?? 'No tienes una suscripción activa.',
+                screen: AgentChatScreen(
+                  service: AgentChatService(widget.session.api),
+                ),
+              ),
+            ),
+            IconButton(
               tooltip: 'Buscar por foto',
               icon: const Icon(Icons.image_search_rounded),
-              onPressed: () => Navigator.push<void>(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => VisualSearchScreen(
-                    service: VisualSearchService(widget.session.api),
-                    sightings: _sightings,
-                    styleUrl: widget.config.mapStyleUrl,
-                  ),
+              onPressed: () => _openLimited(
+                title: 'Buscar por foto',
+                allowed: (plan) => plan.puedeBuscar,
+                blocked: (plan) =>
+                    plan?.textoBusqueda() ??
+                    'No tienes una suscripción activa.',
+                screen: VisualSearchScreen(
+                  service: VisualSearchService(widget.session.api),
+                  sightings: _sightings,
+                  styleUrl: widget.config.mapStyleUrl,
                 ),
               ),
             ),

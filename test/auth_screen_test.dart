@@ -4,17 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartpet_movil/config/app_theme.dart';
 import 'package:smartpet_movil/features/auth/screens/auth_screen.dart';
+import 'package:smartpet_movil/features/auth/models/pending_email_verification.dart';
+import 'package:smartpet_movil/features/auth/screens/email_verification_screen.dart';
 import 'package:smartpet_movil/features/legal/screens/legal_screen.dart';
 
 void main() {
   Future<void> open(
     WidgetTester tester, {
-    required Future<void> Function(Map<String, dynamic>) submit,
+    required Future<PendingEmailVerification?> Function(Map<String, dynamic>)
+    submit,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildAppTheme(),
-        home: AuthScreen(onLogin: submit, onRegister: submit),
+        home: AuthScreen(
+          onLogin: submit,
+          onRegister: submit,
+          onVerifyEmail: (_, _) async {},
+          onResendCode: (_) async {},
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -35,6 +43,7 @@ void main() {
       tester,
       submit: (_) async {
         calls++;
+        return null;
       },
     );
     await tapSubmit(tester, 'Iniciar sesión');
@@ -54,6 +63,7 @@ void main() {
         tester,
         submit: (value) async {
           sent = value;
+          return null;
         },
       );
       await tester.tap(find.text('Crear cuenta'));
@@ -136,7 +146,7 @@ void main() {
   testWidgets('error conserva entradas y bloqueo evita enviar dos veces', (
     tester,
   ) async {
-    final pending = Completer<void>();
+    final pending = Completer<PendingEmailVerification?>();
     var calls = 0;
     await open(
       tester,
@@ -161,8 +171,36 @@ void main() {
     );
     pending.completeError('Credenciales inválidas.');
     await tester.pumpAndSettle();
-    expect(find.text('Credenciales inválidas.'), findsOneWidget);
+    expect(
+      find.text('Ocurrió un problema. Intenta nuevamente.'),
+      findsOneWidget,
+    );
     expect(find.text('ana@example.com'), findsOneWidget);
+  });
+
+  testWidgets('una autenticación pendiente abre la pantalla de código', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      submit: (_) async => const PendingEmailVerification(
+        email: 'ana@example.com',
+        maskedEmail: 'an*@example.com',
+        emailSent: false,
+      ),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('email')),
+      'ana@example.com',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('password')),
+      'Password123',
+    );
+    await tapSubmit(tester, 'Iniciar sesión');
+    await tester.pumpAndSettle();
+    expect(find.byType(EmailVerificationScreen), findsOneWidget);
+    expect(find.textContaining('an*@example.com'), findsOneWidget);
   });
 
   testWidgets('el formulario admite pantalla estrecha y texto ampliado', (
@@ -180,7 +218,12 @@ void main() {
             size: Size(320, 700),
             textScaler: TextScaler.linear(1.5),
           ),
-          child: AuthScreen(onLogin: (_) async {}, onRegister: (_) async {}),
+          child: AuthScreen(
+            onLogin: (_) async => null,
+            onRegister: (_) async => null,
+            onVerifyEmail: (_, _) async {},
+            onResendCode: (_) async {},
+          ),
         ),
       ),
     );

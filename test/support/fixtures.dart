@@ -1,4 +1,5 @@
 import 'package:smartpet_movil/features/auth/services/session.dart';
+import 'package:smartpet_movil/shared/services/api_client.dart';
 
 class MemoryTokenStore implements TokenStore {
   MemoryTokenStore([this.value]);
@@ -13,6 +14,29 @@ class MemoryTokenStore implements TokenStore {
   @override
   Future<void> clear() async {
     value = null;
+  }
+}
+
+class MemorySessionNotifications implements SessionNotifications {
+  int logins = 0;
+  int logouts = 0;
+  bool failLogout = false;
+  bool disposed = false;
+
+  @override
+  Future<void> afterLogin(ApiClient api) async {
+    logins++;
+  }
+
+  @override
+  Future<void> beforeLogout(ApiClient api) async {
+    logouts++;
+    if (failLogout) throw StateError('push unavailable');
+  }
+
+  @override
+  void dispose() {
+    disposed = true;
   }
 }
 

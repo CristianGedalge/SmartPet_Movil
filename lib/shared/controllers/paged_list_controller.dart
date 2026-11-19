@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../utils/error_message.dart';
+
 class PagedListController<T> extends ChangeNotifier {
   PagedListController({required this.fetchPage, this.pageSize = 10});
   final Future<List<T>> Function(int limit, int offset) fetchPage;
@@ -26,7 +28,10 @@ class PagedListController<T> extends ChangeNotifier {
       hasMore = next.length == pageSize;
     } catch (failure) {
       if (_disposed || generation != _generation) return;
-      error = failure.toString();
+      error = userErrorMessage(
+        failure,
+        fallback: 'No pudimos cargar la información. Intenta nuevamente.',
+      );
     } finally {
       if (!_disposed && generation == _generation) {
         loading = false;
@@ -48,7 +53,10 @@ class PagedListController<T> extends ChangeNotifier {
       hasMore = next.length == pageSize;
     } catch (failure) {
       if (_disposed || generation != _generation) return;
-      error = failure.toString();
+      error = userErrorMessage(
+        failure,
+        fallback: 'No pudimos cargar más resultados. Intenta nuevamente.',
+      );
       pageError = true;
     } finally {
       if (!_disposed && generation == _generation) {

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/utils/error_message.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../../shared/widgets/async_resource.dart';
 import '../models/pet.dart';
 import '../services/pets_service.dart';
 import '../widgets/photo_picker.dart';
 import 'pet_form_screen.dart';
+import 'pet_poster_screen.dart';
 
 class PetDetailScreen extends StatelessWidget {
   const PetDetailScreen({super.key, required this.service, required this.id});
@@ -47,7 +49,7 @@ class _DetailState extends State<_Detail> {
     try {
       await action();
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = userErrorMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -108,6 +110,19 @@ class _DetailState extends State<_Detail> {
               icon: const Icon(Icons.edit_outlined),
               label: const Text('Editar datos'),
             ),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: _busy
+                  ? null
+                  : () => Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => PetPosterScreen(pet: pet),
+                      ),
+                    ),
+              icon: const Icon(Icons.auto_awesome_outlined),
+              label: const Text('Generar afiche'),
+            ),
             const SizedBox(height: 20),
             const Text(
               'Sus fotografías',
@@ -146,15 +161,12 @@ class _DetailState extends State<_Detail> {
                                         !mounted) {
                                       return;
                                     }
-                                    final pending = await widget.service
-                                        .deletePhoto(pet.id, photo.id);
+                                    await widget.service.deletePhoto(
+                                      pet.id,
+                                      photo.id,
+                                    );
                                     if (mounted) {
-                                      showMessage(
-                                        context,
-                                        pending
-                                            ? 'Foto eliminada. Su limpieza en el almacenamiento está pendiente.'
-                                            : 'Foto eliminada.',
-                                      );
+                                      showMessage(context, 'Foto eliminada.');
                                       widget.reload();
                                     }
                                   }),
