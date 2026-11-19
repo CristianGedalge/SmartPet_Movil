@@ -40,6 +40,7 @@ class ApiClient {
   Future<dynamic> send(
     http.BaseRequest request, {
     bool authenticated = true,
+    Duration timeout = const Duration(seconds: 45),
   }) async {
     final capturedToken = authenticated ? token : null;
     if (authenticated && capturedToken == null) {
@@ -52,7 +53,7 @@ class ApiClient {
     try {
       final response = await (() async => http.Response.fromStream(
         await _client.send(request),
-      ))().timeout(const Duration(seconds: 45));
+      ))().timeout(timeout);
       dynamic data;
       try {
         data = response.body.isEmpty

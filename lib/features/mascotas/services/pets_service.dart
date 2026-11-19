@@ -15,6 +15,12 @@ class UploadPhoto {
       throw const ApiFailure('Cada foto debe pesar como máximo 5 MB.');
     }
     final bytes = await file.readAsBytes();
+    if (bytes.isEmpty) {
+      throw const ApiFailure('La fotografía está vacía. Elige otra imagen.');
+    }
+    if (bytes.length > 5 * 1024 * 1024) {
+      throw const ApiFailure('Cada foto debe pesar como máximo 5 MB.');
+    }
     String? mime;
     String? extension;
     if (bytes.length >= 3 &&
@@ -113,6 +119,6 @@ class PetsService {
         ),
       );
     }
-    return api.send(request);
+    return api.send(request, timeout: const Duration(seconds: 120));
   }
 }

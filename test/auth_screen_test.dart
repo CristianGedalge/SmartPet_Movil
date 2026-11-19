@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartpet_movil/config/app_theme.dart';
 import 'package:smartpet_movil/features/auth/screens/auth_screen.dart';
+import 'package:smartpet_movil/features/legal/screens/legal_screen.dart';
 
 void main() {
   Future<void> open(
@@ -66,7 +67,62 @@ void main() {
         await tester.enterText(find.byKey(ValueKey(entry.key)), entry.value);
       }
       await tapSubmit(tester, 'Crear mi cuenta');
+      expect(sent, isNull);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Crear mi cuenta'),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('accept-terms')));
+      await tester.tap(find.byKey(const ValueKey('accept-terms')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Crear mi cuenta'),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.ensureVisible(
+        find.widgetWithText(TextButton, 'Política de privacidad'),
+      );
+      await tester.tap(
+        find.widgetWithText(TextButton, 'Política de privacidad'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(LegalScreen), findsOneWidget);
+      expect(find.textContaining('Versión $legalVersion'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<CheckboxListTile>(
+              find.byKey(const ValueKey('accept-terms')),
+            )
+            .value,
+        isTrue,
+      );
+      expect(
+        tester
+            .widget<CheckboxListTile>(
+              find.byKey(const ValueKey('accept-privacy')),
+            )
+            .value,
+        isFalse,
+      );
+      expect(find.text('ANA@example.com'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const ValueKey('accept-privacy')));
+      await tester.tap(find.byKey(const ValueKey('accept-privacy')));
+      await tester.pumpAndSettle();
+      await tapSubmit(tester, 'Crear mi cuenta');
       expect(sent, {
+        'aceptaTerminos': true,
+        'aceptaPrivacidad': true,
+        'versionLegal': legalVersion,
         'nombre': 'Ana',
         'apellido': 'Pérez',
         'email': 'ana@example.com',

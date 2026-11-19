@@ -8,6 +8,8 @@ import '../../mascotas/services/pets_service.dart';
 import '../models/lost_alert.dart';
 import '../services/alerts_service.dart';
 import 'alert_form_screen.dart';
+import '../../chat/widgets/contact_author_button.dart';
+import '../../chat/services/chat_service.dart';
 
 class AlertDetailScreen extends StatelessWidget {
   const AlertDetailScreen({
@@ -116,6 +118,13 @@ class _DetailState extends State<_Detail> {
               alignment: Alignment.centerLeft,
               child: Chip(label: Text(alert.status.label)),
             ),
+            if (!widget.owner && alert.status == AlertStatus.active) ...[
+              ContactAuthorButton(
+                service: ChatService(widget.service.api),
+                alertId: alert.id,
+              ),
+              const SizedBox(height: 16),
+            ],
             Text(
               [
                 alert.pet.species?.nombre,

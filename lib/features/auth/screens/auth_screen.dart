@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../legal/screens/legal_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({
@@ -25,6 +26,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _telefono = TextEditingController();
   final _password = TextEditingController();
   bool _register = false, _busy = false, _hidden = true;
+  bool _acceptTerms = false, _acceptPrivacy = false;
   String? _error;
 
   @override
@@ -46,6 +48,12 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _submit() async {
     if (_busy || !_form.currentState!.validate()) return;
+    if (_register && (!_acceptTerms || !_acceptPrivacy)) {
+      setState(
+        () => _error = 'Acepta los términos y condiciones y la política de privacidad para registrarte.',
+      );
+      return;
+    }
     FocusScope.of(context).unfocus();
     setState(() {
       _busy = true;
@@ -58,6 +66,9 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       if (_register) {
         await widget.onRegister({
+          'aceptaTerminos': _acceptTerms,
+          'aceptaPrivacidad': _acceptPrivacy,
+          'versionLegal': legalVersion,
           ...credentials,
           'nombre': _nombre.text.trim(),
           'apellido': _apellido.text.trim(),
@@ -171,6 +182,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ? null
                                 : (_) => setState(() {
                                     _register = register;
+                                    _acceptTerms = false;
+                                    _acceptPrivacy = false;
                                     _error = null;
                                     _form.currentState?.reset();
                                   }),
@@ -287,13 +300,57 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ? 'Usa al menos 8 caracteres.'
                                 : null,
                           ),
+                          if (_register) ...[
+                            CheckboxListTile(
+                              key: const ValueKey('accept-terms'),
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              value: _acceptTerms,
+                              onChanged: _busy
+                                  ? null
+                                  : (value) => setState(
+                                      () => _acceptTerms = value ?? false,
+                                    ),
+                              title: const Text(
+                                'Acepto los términos y condiciones.',
+                              ),
+                            ),
+                            CheckboxListTile(
+                              key: const ValueKey('accept-privacy'),
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              value: _acceptPrivacy,
+                              onChanged: _busy
+                                  ? null
+                                  : (value) => setState(
+                                      () => _acceptPrivacy = value ?? false,
+                                    ),
+                              title: const Text(
+                                'He leído y acepto la política de privacidad.',
+                              ),
+                            ),
+                            const Text(
+                              'Debes aceptar ambos documentos para crear tu cuenta. Puedes leerlos en los enlaces siguientes.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                height: 1.5,
+                                color: AppColors.muted,
+                              ),
+                            ),
+                            const LegalLinks(),
+                          ],
                           if (_error != null) ...[
                             const SizedBox(height: 14),
                             InlineMessage(_error!),
                           ],
                           const SizedBox(height: 20),
                           FilledButton(
-                            onPressed: _busy ? null : _submit,
+                            onPressed:
+                                _busy ||
+                                    (_register &&
+                                        (!_acceptTerms || !_acceptPrivacy))
+                                ? null
+                                : _submit,
                             child: _busy
                                 ? const SizedBox(
                                     width: 22,
@@ -318,6 +375,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
+                    if (!_register) const LegalLinks(),
                     const Text(
                       'Pequeñas huellas. Grandes historias.',
                       textAlign: TextAlign.center,

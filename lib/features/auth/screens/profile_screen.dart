@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../legal/screens/legal_screen.dart';
+
 import '../../../config/app_theme.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../services/session.dart';
@@ -186,6 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: const Icon(Icons.logout_rounded),
                 label: const Text('Cerrar sesión'),
               ),
+              const LegalLinks(),
             ],
           ),
         ),

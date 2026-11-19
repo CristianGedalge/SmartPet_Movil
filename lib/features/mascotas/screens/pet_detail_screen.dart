@@ -174,7 +174,7 @@ class _DetailState extends State<_Detail> {
                         context,
                         available: 5 - pet.photos.length,
                       );
-                      if (photos.isEmpty) return;
+                      if (photos.isEmpty || !mounted) return;
                       await widget.service.addPhotos(pet.id, photos);
                       if (mounted) {
                         showMessage(context, 'Fotos agregadas.');

@@ -83,6 +83,6 @@ class SightingsService {
         ),
       );
     }
-    return api.send(request);
+    return api.send(request, timeout: const Duration(seconds: 120));
   }
 }

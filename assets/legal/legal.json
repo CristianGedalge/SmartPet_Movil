@@ -1,0 +1,96 @@
+{
+  "version": "2026-11-18.1",
+  "updatedAt": "18 de noviembre de 2026",
+  "responsible": "Equipo SmartPet",
+  "contact": "Para consultas sobre el servicio, privacidad o solicitudes de eliminación de tu cuenta y datos, escribe a cristian.gedalge2018@gmail.com.",
+  "documents": {
+    "terminos": {
+      "title": "Términos y condiciones",
+      "introduction": "Estos términos describen las condiciones de uso de la versión actual de SmartPet, una plataforma de apoyo al bienestar animal que conecta ciudadanos, veterinarias y refugios. Léelos antes de crear tu cuenta.",
+      "sections": [
+        {
+          "title": "Uso de SmartPet",
+          "body": "SmartPet permite registrar mascotas, publicar alertas de extravío y avistamientos, consultar adopciones, conversar sobre reportes y buscar posibles coincidencias por fotografía. Los establecimientos gestionan sus resguardados y publicaciones desde el portal web. Las funciones disponibles pueden variar según tu rol y la versión del servicio."
+        },
+        {
+          "title": "Cuenta y aceptación",
+          "body": "Para registrar una cuenta debes aceptar expresamente estos términos y la política de privacidad mediante las casillas del formulario. Se registra la versión aceptada y la fecha del servidor. Proporciona datos correctos, protege tu contraseña y evita compartir tu sesión. No debes utilizar una cuenta ajena ni presentar como propio un establecimiento sin autorización."
+        },
+        {
+          "title": "Contenido y convivencia",
+          "body": "Publica información de buena fe y únicamente fotografías y datos que tengas derecho a compartir. No publiques contenido falso, amenazas, acoso, material ilegal, datos privados ajenos ni solicitudes de dinero para devolver una mascota. Al publicar, autorizas el almacenamiento, procesamiento y visualización necesarios para las funciones de SmartPet; esto no transfiere la propiedad de tus fotografías."
+        },
+        {
+          "title": "Reportes y ubicaciones",
+          "body": "Las fotos, descripciones, fechas y ubicaciones de los reportes activos pueden ser consultadas por otros usuarios. No publiques tu domicilio ni datos de terceros si no son necesarios. Un avistamiento no confirma la identidad, el estado de salud ni el rescate de un animal. Mantén tus publicaciones actualizadas y cierra las que ya no deban estar activas."
+        },
+        {
+          "title": "Búsqueda visual",
+          "body": "La búsqueda por fotografía ofrece candidatos con similitud visual. No confirma que se trate de la misma mascota, no constituye una probabilidad de identidad y puede omitir coincidencias o mostrar animales diferentes. Revisa las fotos, la fecha y la ubicación y verifica la información con quien publicó el reporte. No dependas únicamente del resultado automatizado."
+        },
+        {
+          "title": "Adopciones y encuentros",
+          "body": "Las adopciones se coordinan con el establecimiento responsable. Ver una publicación no reserva un animal ni garantiza que una adopción se concrete. Comprueba los datos y las condiciones de entrega directamente con el establecimiento. Coordina encuentros de forma prudente; SmartPet no sustituye la atención veterinaria ni los servicios de emergencia."
+        },
+        {
+          "title": "Mensajes y acceso",
+          "body": "El chat está vinculado a los reportes y debe usarse para comunicación pertinente y respetuosa. Los mensajes se almacenan en el servidor y no utilizan cifrado de extremo a extremo. La administración puede limitar o desactivar cuentas por uso indebido; la desactivación no equivale necesariamente a eliminar los datos almacenados."
+        },
+        {
+          "title": "Disponibilidad y cambios",
+          "body": "El servicio depende de la conexión, el servidor y proveedores externos; puede sufrir interrupciones y cambios. No se garantiza encontrar una mascota, obtener una adopción ni disponer permanentemente de una función. Las modificaciones de estos documentos deben identificarse con una nueva versión. La aceptación guardada corresponde a la versión que se mostró al registrarte."
+        },
+        {
+          "title": "Contacto y datos personales",
+          "body": "El tratamiento de la información se describe en la política de privacidad. Para consultas sobre tu cuenta, publicaciones o estos términos, utiliza el contacto del responsable indicado en este documento."
+        }
+      ]
+    },
+    "privacidad": {
+      "title": "Política de privacidad",
+      "introduction": "Esta política explica qué información procesa la versión actual de SmartPet, para qué se utiliza y qué se comparte. La aceptación del registro no activa por sí sola los permisos de cámara, galería o ubicación de tu dispositivo.",
+      "sections": [
+        {
+          "title": "Datos que proporcionas",
+          "body": "Procesamos nombre, apellido, correo electrónico, contraseña protegida mediante hash y los datos opcionales de perfil que proporciones. También datos de mascotas, fotografías, alertas, avistamientos, mensajes y datos del establecimiento. En una entrega por adopción se registran los datos del adoptante que ingresa el establecimiento, como nombre, teléfono y fecha de adopción. Se conserva la versión y fecha de aceptación de estos documentos."
+        },
+        {
+          "title": "Finalidades",
+          "body": "Utilizamos la información para crear y autenticar cuentas, mostrar y gestionar fichas y reportes, coordinar conversaciones, publicar adopciones, comparar fotografías y ofrecer estadísticas geográficas. La versión actual no implementa publicidad dirigida ni venta de datos. No enviamos las fotos de consulta a un agente de Bedrock ni las utilizamos para entrenar automáticamente el modelo."
+        },
+        {
+          "title": "Qué información se hace pública",
+          "body": "Las fotografías y datos visibles de reportes activos pueden ser consultados por otras personas. Las adopciones públicas incluyen datos de la mascota y contacto del establecimiento. El nombre visible de tu perfil puede mostrarse a tu interlocutor en un chat. Los enlaces de imágenes publicadas pueden abrirse fuera de la aplicación. No incluyas información privada o imágenes de terceros sin autorización."
+        },
+        {
+          "title": "Cámara, galería y ubicación",
+          "body": "La cámara y la galería se utilizan cuando eliges agregar fotografías. Puedes seleccionar una ubicación en el mapa o solicitar al dispositivo tu ubicación para facilitar esa selección. Las coordenadas que confirmas se envían para el reporte o establecimiento correspondiente y su ubicación puede mostrarse públicamente. Esta versión no realiza seguimiento de ubicación en segundo plano. Los permisos del sistema pueden modificarse en los ajustes del dispositivo."
+        },
+        {
+          "title": "Imágenes y búsqueda visual",
+          "body": "Las fotos publicadas se almacenan mediante Cloudinary. Para comparar avistamientos, el servicio interno de IA procesa sus fotos y guarda vectores numéricos asociados a la foto y versión del modelo. Las fotos enviadas exclusivamente para una consulta visual se procesan temporalmente y no se guardan como publicaciones, archivos de Cloudinary ni fotografías de tu cuenta. El resultado es orientativo y no identifica con certeza al animal."
+        },
+        {
+          "title": "Mensajes y gestión privada",
+          "body": "El chat guarda contenido, participantes y estados de lectura en el servidor para entregar y recuperar las conversaciones. La aplicación limita la consulta a los participantes autorizados, pero no ofrece cifrado de extremo a extremo. Los datos de entrega por adopción se muestran en la gestión privada del establecimiento correspondiente. El personal con acceso técnico autorizado al servidor puede tratar datos para operar y mantener el servicio."
+        },
+        {
+          "title": "Proveedores y almacenamiento local",
+          "body": "La infraestructura del servidor y PostgreSQL alojan los datos de la aplicación. Cloudinary procesa las fotos publicadas. OpenFreeMap proporciona recursos de los mapas y puede recibir la dirección IP y solicitudes relacionadas con la zona visualizada. El navegador conserva información de sesión en almacenamiento local; el móvil utiliza almacenamiento de sesión del dispositivo. Estos proveedores pueden procesar información técnica según sus propias políticas. La distribución geográfica del alojamiento depende del despliegue utilizado."
+        },
+        {
+          "title": "Conservación y eliminación",
+          "body": "Los datos permanecen mientras sean necesarios para las funciones e historial del servicio o para atender obligaciones aplicables. Cerrar un reporte, retirar una publicación o desactivar una cuenta no garantiza su eliminación física. La versión actual no ofrece eliminación automática de la cuenta desde la aplicación. Puedes solicitar información, corrección o eliminación al responsable; se verificará tu identidad y se revisará qué datos pueden eliminarse y qué historial o información de terceros debe conservarse. No se promete un plazo de borrado automático que el sistema no implemente."
+        },
+        {
+          "title": "Seguridad y tus decisiones",
+          "body": "Se aplican autenticación, controles de acceso y hash de contraseñas; ninguna medida elimina todos los riesgos. Evita compartir información sensible en reportes o chats. Puedes revisar tu perfil, decidir qué publicas, modificar los permisos del dispositivo y solicitar al responsable ayuda para gestionar tus datos. Aceptar esta política no supone autorizar publicidad ni sustituye permisos específicos del sistema."
+        },
+        {
+          "title": "Consultas y actualizaciones",
+          "body": "Utiliza el contacto del responsable indicado en este documento para consultas sobre el uso de tu información o solicitudes relacionadas con tu cuenta. Los cambios de esta política deben publicarse con una nueva versión y una fecha identificable. El registro de aceptación conserva la versión presentada al crear la cuenta."
+        }
+      ]
+    }
+  }
+}

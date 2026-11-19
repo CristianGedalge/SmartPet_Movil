@@ -43,6 +43,7 @@ dependencies:
   flutter_svg: ^2.4.0
   flutter_localizations:
     sdk: flutter
+  socket_io_client: ^3.1.6
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +68,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/smartpet-icon.svg
+    - assets/legal/legal.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -16,10 +16,11 @@ class HomeScreen extends StatelessWidget {
     required this.onPets,
     required this.onAlerts,
     required this.onAlert,
+    required this.onAdoptions,
   });
   final UserProfile user;
   final AlertsService alerts;
-  final VoidCallback onPets, onAlerts;
+  final VoidCallback onPets, onAlerts, onAdoptions;
   final ValueChanged<LostAlert> onAlert;
   @override
   Widget build(BuildContext context) => AsyncResource<List<LostAlert>>(
@@ -89,6 +90,34 @@ class HomeScreen extends StatelessWidget {
                   onPressed: onPets,
                   icon: const Icon(Icons.arrow_forward_rounded),
                   label: const Text('Ver mis mascotas'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 26),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Icon(
+                  Icons.favorite_border_rounded,
+                  color: Color(0xFF008F73),
+                  size: 32,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Un hogar cambia su historia',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Conoce a los animales de veterinarias y refugios que buscan una familia.',
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: onAdoptions,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: const Text('Explorar adopciones'),
                 ),
               ],
             ),

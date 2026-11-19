@@ -1,5 +1,11 @@
 import 'features/avistamientos/screens/sightings_screen.dart';
 import 'features/avistamientos/services/sightings_service.dart';
+import 'features/adopciones/screens/adoptions_screen.dart';
+import 'features/adopciones/services/adoptions_service.dart';
+import 'features/chat/services/chat_service.dart';
+import 'features/chat/screens/chat_inbox_screen.dart';
+import 'features/busqueda_visual/screens/visual_search_screen.dart';
+import 'features/busqueda_visual/services/visual_search_service.dart';
 
 import 'dart:async';
 
@@ -138,6 +144,7 @@ class _CitizenShellState extends State<_CitizenShell> {
   late final _pets = PetsService(widget.session.api);
   late final _alerts = AlertsService(widget.session.api);
   late final _sightings = SightingsService(widget.session.api);
+  late final _adoptions = AdoptionsService(widget.session.api);
   void _go(int index) => setState(() => _index = index);
   @override
   Widget build(BuildContext context) {
@@ -149,6 +156,7 @@ class _CitizenShellState extends State<_CitizenShell> {
         alerts: _alerts,
         onPets: () => _go(1),
         onAlerts: () => _go(2),
+        onAdoptions: () => _go(4),
         onAlert: (alert) => Navigator.push<void>(
           context,
           MaterialPageRoute(
@@ -169,7 +177,7 @@ class _CitizenShellState extends State<_CitizenShell> {
         styleUrl: widget.config.mapStyleUrl,
       ),
       SightingsScreen(service: _sightings, styleUrl: widget.config.mapStyleUrl),
-      ProfileScreen(session: widget.session),
+      AdoptionsScreen(service: _adoptions),
     ];
     return PopScope(
       canPop: _index == 0,
@@ -198,11 +206,46 @@ class _CitizenShellState extends State<_CitizenShell> {
             ],
           ),
           actions: [
+            IconButton(
+              tooltip: 'Buscar por foto',
+              icon: const Icon(Icons.image_search_rounded),
+              onPressed: () => Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VisualSearchScreen(
+                    service: VisualSearchService(widget.session.api),
+                    sightings: _sightings,
+                    styleUrl: widget.config.mapStyleUrl,
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Mensajes',
+              icon: const Icon(Icons.chat_bubble_outline_rounded),
+              onPressed: () => Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ChatInboxScreen(service: ChatService(widget.session.api)),
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: IconButton(
                 tooltip: 'Mi perfil',
-                onPressed: () => _go(4),
+                onPressed: () => Navigator.push<void>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      appBar: AppBar(title: const Text('Mi perfil')),
+                      body: SafeArea(
+                        child: ProfileScreen(session: widget.session),
+                      ),
+                    ),
+                  ),
+                ),
                 icon: CircleAvatar(
                   backgroundColor: AppColors.mint,
                   child: Text(
@@ -246,9 +289,9 @@ class _CitizenShellState extends State<_CitizenShell> {
               label: 'Avistamientos',
             ),
             NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(Icons.person_rounded),
-              label: 'Perfil',
+              icon: Icon(Icons.favorite_border_rounded),
+              selectedIcon: Icon(Icons.favorite_rounded),
+              label: 'Adopciones',
             ),
           ],
         ),
